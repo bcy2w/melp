@@ -2,6 +2,9 @@ package bcy.melp;
 
 import java.util.*;
 
+/**
+ * This is the Interface as seen by the IMPLEMENTER of the Interface.
+ */
 public class InterfaceImpl extends Interface {
     static public class Variable extends ReadWriteVariable {
         public Variable( String name, String description ) {
@@ -20,6 +23,7 @@ public class InterfaceImpl extends Interface {
     public Map<String,ReadWriteVariable> getInVariables() {
         return inVariables;
     }
+
     public void setOutVariables( Map<String,ReadOnlyVariable> v ) {
         outVariables = v;
     }

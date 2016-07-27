@@ -2,6 +2,9 @@ package bcy.melp;
 
 import java.util.*;
 
+/**
+ * This is the Interface as seen by the USER of the Interface.
+ */
 public class Interface {
     static public class ReadOnlyVariable {
         protected String name;
@@ -33,12 +36,11 @@ public class Interface {
             Collections.emptySet() : outVariables.keySet();
     }
 
-    public Object get( String name ) {
+    public ReadOnlyVariable get( String name ) {
         if ( outVariables == null ) {
             return null;
         }
-        ReadOnlyVariable o = outVariables.get( name );
-        return o == null ? null : o.getValue();
+        return outVariables.get( name );
     }
         
     public void set( String name, Object value ) {

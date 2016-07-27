@@ -1,92 +1,114 @@
-<project name="MyProject" default="dist" basedir=".">
+<project name="Melp" default="dist" basedir=".">
     <description>
         Modular Environment for Learning Programming
     </description>
+
+    <defaultexcludes add="**/*.swp"/>
+
     <property name="VERSION" value="0.1"/>
 
     <property environment="env"/>
 
-    <property name="src" location="src"/>
-    <property name="build" location="build"/>
-    <property name="dist" location="dist"/>
+    <property name="src.dir" location="src"/>
+    <property name="build.dir" location="build"/>
+    <property name="classes.dir" location="${build.dir}/classes"/>
+    <property name="dist.dir" location="dist"/>
+    <property name="pkg.dir" location="${dist.dir}/pkg"/>
+
+    <property name="main-jar" value="${ant.project.name}.jar"/>
+    <property name="main-class" value="bcy.melp.Main"/>
+
+    <echo message="Groovy is in ${env.GROOVY_HOME}"/>
 
     <path id="javac.classpath">
         <fileset dir="${env.GROOVY_HOME}/lib">
-            <include name="groovy-2.4.3.jar"/>
+            <include name="groovy-2.4.7.jar"/>
         </fileset>
         <fileset dir="lib">
             <include name="**/*.jar"/>
         </fileset>
     </path>
-    
-    <target name="init">
+    <!--
+    <pathconvert targetos="unix" property="javac.classpath" refid="javac.classpath">
+    </pathconvert>
+    -->
+
+    <target name="init" >
         <!-- Create the time stamp -->
         <tstamp/>
     </target>
         
     <target name="compile" depends="init"
             description="compile the source">
-        <!-- Compile the java code from ${src} into ${build} -->
-        <mkdir dir="${build}/classes"/>
-        <javac includeantruntime="false"
-                srcdir="${src}/java" destdir="${build}/classes">
-            <classpath refid="javac.classpath"/>
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}/java" destdir="${classes.dir}"
+            includeantruntime="false"
+            debug="true" verbose="false"
+            classpathref="javac.classpath">
         </javac>
-        <copy todir="${build}/classes">
-            <fileset dir="${src}/groovy"/>
+        <copy todir="${classes.dir}">
+            <fileset dir="${src.dir}/groovy"/>
+            <fileset dir="${src.dir}">
+                <include name="**/*xml"/>
+                <include name="**/*.css"/>
+                <include name="**/*.properties*"/>
+            </fileset>
         </copy>
     </target>
     
     <target name="build" depends="compile" description="build the package">
-        <mkdir dir="${build}/pkg/lib"/>
-        <copy todir="${build}/pkg/lib">
+        <mkdir dir="${pkg.dir}/lib"/>
+        <copy todir="${pkg.dir}/lib">
             <fileset dir="${env.GROOVY_HOME}/lib">
                 <include name="groovy-2.4.3.jar"/>
             </fileset>
         </copy>
-        <manifestclasspath property="lib.list"
-                jarfile="${build}/pkg/lib/myprog.jar">
+        <manifestclasspath property="manifest-cp"
+                jarfile="${pkg.dir}/lib/myprog.jar">
             <classpath>
-                <fileset dir="${build}/pkg/lib">
+                <fileset dir="${pkg.dir}/lib">
                     <include name="**/*.jar"/>
                 </fileset>
             </classpath>
         </manifestclasspath>
+        <echo message="Manifest Classpath: ${manifest-cp}"/>
 
-        <copy todir="${build}/classes">
-            <fileset dir="${src}/groovy"/>
+        <copy todir="${classes.dir}">
+            <fileset dir="${src.dir}/groovy"/>
         </copy>
-        <jar jarfile="${build}/pkg/lib/melp.jar" basedir="${build}/classes">
+
+        <jar jarfile="${pkg.dir}/lib/${main-jar}" basedir="${classes.dir}">
             <manifest>
                 <attribute name="Main-Class" value="bcy.melp.Main"/>
-                <attribute name="Class-Path" value="${lib.list}"/>
+                <attribute name="Class-Path" value="${manifest-cp}"/>
             </manifest>
         </jar>
-        <copy todir="${build}/pkg/bin">
+
+        <copy todir="${pkg.dir}/bin">
             <fileset dir="bin">
                 <include name="**/*.cmd"/>
             </fileset>
         </copy>
-        <copy todir="${build}/pkg/conf">
+        <copy todir="${pkg.dir}/conf">
             <fileset dir="conf">
                 <include name="**/*properties*"/>
             </fileset>
         </copy>
     </target>
     
-    <target name="dist" depends="build" >
-        <mkdir dir="${dist}"/>
-        <zip zipfile="${dist}/melp-${VERSION}-${DSTAMP}.zip"
-            basedir="${build}/pkg"/>
+    <target name="dist" depends="build" description="Build the distribution">
+        <mkdir dir="${dist.dir}"/>
+        <zip zipfile="${dist.dir}/melp-${VERSION}-${DSTAMP}.zip"
+            basedir="${pkg.dir}"/>
     </target>
     
-    <target name="clean">
-        <delete dir="${build}"/>
-        <delete dir="${dist}"/>
+    <target name="clean" description="Cleans the environment">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
     </target>
 
     <target name="run">
-        <java dir="${build}/pkg" fork="true" jar="${build}/pkg/lib/melp.jar">
+        <java dir="${pkg.dir}" fork="true" jar="${pkg.dir}/lib/melp.jar">
         </java>
     </target>
 </project>

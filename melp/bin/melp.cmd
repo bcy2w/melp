@@ -1,7 +1,7 @@
-set ORIG_DIR=%CD%
 
+set ORIG_DIR=%CD%
 cd %~dp0/..
 
 java -jar lib/melp.jar
 
-cd /d %OLDDIR%
+cd /d %ORIG_DIR%

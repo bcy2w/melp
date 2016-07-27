@@ -9,8 +9,11 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovyCodeSource;
 
 import bcy.melp.worlds.SimpleWorld;
+import bcy.melp.worlds.World;
 
 public class Main {
+
+    private GroovyClassLoader gcl = new GroovyClassLoader();
 
     static public void main( String[] args ) throws Exception {
         Main main = new Main();
@@ -25,18 +28,13 @@ public class Main {
         // Create World
         World world = new SimpleWorld();
 
-        // Create Controller
-        GroovyClassLoader gcl = new GroovyClassLoader();
 
-        GroovyCodeSource testCodeSource = new GroovyCodeSource(
-            getClass().getResource( "/Test.groovy" ) );
-        Class testClass = gcl.parseClass( testCodeSource );
+        GroovyObject player = createPlayerObject( "/Test.groovy" );
 
-        GroovyObject test = (GroovyObject) testClass.newInstance();
-        test.setProperty( "world", world.getInterface( null ) );
+        player.setProperty( "world", world.getInterface( null ) );
 
         while ( !world.finished() ) {
-            test.invokeMethod( "takeTurn", null );
+            player.invokeMethod( "takeTurn", null );
             world.takeTurn();
             try {
                 Thread.sleep( 500 );
@@ -46,6 +44,15 @@ public class Main {
         }
         world.summary();
 
+    }
+
+    private GroovyObject createPlayerObject( String file )
+            throws InstantiationException, IllegalAccessException {
+        GroovyCodeSource codeSource = new GroovyCodeSource( getClass().getResource( file ) );
+        Class clazz = gcl.parseClass( codeSource );
+
+        GroovyObject obj = (GroovyObject) clazz.newInstance();
+        return obj;
     }
 
 }
